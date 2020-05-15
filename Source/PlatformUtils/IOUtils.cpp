@@ -53,7 +53,8 @@ namespace IOUtils
       if (std::filesystem::is_regular_file(path))
       {
          std::error_code errorCode;
-         if (std::filesystem::create_directories(path.parent_path(), errorCode))
+         std::filesystem::create_directories(path.parent_path(), errorCode);
+         if (!errorCode)
          {
             std::ofstream out(path);
             if (out)
@@ -72,7 +73,8 @@ namespace IOUtils
       if (std::filesystem::is_regular_file(path))
       {
          std::error_code errorCode;
-         if (std::filesystem::create_directories(path.parent_path(), errorCode))
+         std::filesystem::create_directories(path.parent_path(), errorCode);
+         if (!errorCode)
          {
             std::ofstream out(path, std::ofstream::binary);
             if (out)
