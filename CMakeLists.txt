@@ -10,7 +10,7 @@ add_library(${PROJECT_NAME}
 )
 if(APPLE)
    target_sources(${PROJECT_NAME} PRIVATE "${SRC_DIR}/PlatformUtils/MacOSUtils.mm")
-   target_add_definitions(${PROJECT_NAME} PUBLIC "-xobjective-c++")
+   target_compile_options(${PROJECT_NAME} PUBLIC "-xobjective-c++")
 endif()
 
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
