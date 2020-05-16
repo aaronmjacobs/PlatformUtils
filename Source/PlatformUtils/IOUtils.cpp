@@ -50,7 +50,7 @@ namespace IOUtils
 
    bool writeTextFile(const std::filesystem::path& path, std::string_view data)
    {
-      if (std::filesystem::is_regular_file(path))
+      if (path.has_filename())
       {
          std::error_code errorCode;
          std::filesystem::create_directories(path.parent_path(), errorCode);
@@ -70,7 +70,7 @@ namespace IOUtils
 
    bool writeBinaryFile(const std::filesystem::path& path, const std::vector<uint8_t>& data)
    {
-      if (std::filesystem::is_regular_file(path))
+      if (path.has_filename())
       {
          std::error_code errorCode;
          std::filesystem::create_directories(path.parent_path(), errorCode);
