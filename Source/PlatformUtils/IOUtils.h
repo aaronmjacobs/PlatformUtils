@@ -12,8 +12,8 @@ namespace IOUtils
    std::optional<std::string> readTextFile(const std::filesystem::path& path);
    std::optional<std::vector<uint8_t>> readBinaryFile(const std::filesystem::path& path);
 
-   bool writeTextFile(const std::filesystem::path&, std::string_view data);
-   bool writeBinaryFile(const std::filesystem::path&, const std::vector<uint8_t>& data);
+   bool writeTextFile(const std::filesystem::path& path, std::string_view data);
+   bool writeBinaryFile(const std::filesystem::path& path, const std::vector<uint8_t>& data);
 
    std::optional<std::filesystem::path> findProjectDirectory();
 
