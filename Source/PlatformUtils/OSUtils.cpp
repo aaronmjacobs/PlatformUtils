@@ -22,8 +22,6 @@ namespace OSUtils
 #if defined(_WIN32)
    std::optional<std::filesystem::path> getExecutablePath()
    {
-      std::optional<std::filesystem::path> executablePath;
-
       TCHAR buffer[MAX_PATH + 1];
       DWORD length = GetModuleFileName(nullptr, buffer, MAX_PATH);
       buffer[length] = '\0';
@@ -37,74 +35,124 @@ namespace OSUtils
 
          if (length != 0 && length != kUnreasonablyLargeStringLength && GetLastError() != ERROR_INSUFFICIENT_BUFFER)
          {
-            executablePath = std::filesystem::path(unreasonablyLargeBuffer.data());
+            return std::filesystem::path(unreasonablyLargeBuffer.data());
          }
       }
       else
       {
-         executablePath = std::filesystem::path(buffer);
+         return std::filesystem::path(buffer);
       }
 
-      return executablePath;
+      return std::nullopt;
    }
 
-   std::optional<std::filesystem::path> getAppDataDirectory(std::string_view appName)
+   std::optional<std::filesystem::path> getKnownDirectoryPath(KnownDirectory knownDirectory)
    {
-      std::optional<std::filesystem::path> appDataDirectory;
+      const KNOWNFOLDERID* folderID = nullptr;
+      switch (knownDirectory)
+      {
+      case KnownDirectory::Home:
+         folderID = &FOLDERID_Profile;
+         break;
+      case KnownDirectory::Desktop:
+         folderID = &FOLDERID_Desktop;
+         break;
+      case KnownDirectory::Downloads:
+         folderID = &FOLDERID_Downloads;
+         break;
+      case KnownDirectory::UserApplicationData:
+         folderID = &FOLDERID_LocalAppData;
+         break;
+      case KnownDirectory::CommonApplicationData:
+         folderID = &FOLDERID_ProgramData;
+         break;
+      default:
+         break;
+      }
 
+      if (folderID == nullptr)
+      {
+         return std::nullopt;
+      }
+
+      std::optional<std::filesystem::path> knownDirectoryPath;
       PWSTR path = nullptr;
-      if (SHGetKnownFolderPath(FOLDERID_LocalAppData, KF_FLAG_DEFAULT, nullptr, &path) == S_OK)
+      if (SHGetKnownFolderPath(*folderID, KF_FLAG_DEFAULT, nullptr, &path) == S_OK)
       {
 #pragma warning(push)
 #pragma warning(disable: 4996) // codecvt is deprecated, but there is no replacement
          std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
-         appDataDirectory = std::filesystem::path(converter.to_bytes(std::wstring(path))) / appName;
+         knownDirectoryPath = std::filesystem::path(converter.to_bytes(std::wstring(path)));
 #pragma warning(pop)
       }
       CoTaskMemFree(path);
 
-      return appDataDirectory;
+      return knownDirectoryPath;
    }
 #endif // defined(_WIN32)
 
 #if defined(__linux__)
    std::optional<std::filesystem::path> getExecutablePath()
    {
-      std::optional<std::filesystem::path> executablePath;
-
       char path[PATH_MAX + 1];
       ssize_t numBytes = readlink("/proc/self/exe", path, PATH_MAX);
       if (numBytes >= 0 && numBytes <= PATH_MAX)
       {
          path[numBytes] = '\0';
-         executablePath = std::filesystem::path(path);
+         return std::filesystem::path(path);
       }
 
-      return executablePath;
+      return std::nullopt;
    }
 
-   std::optional<std::filesystem::path> getAppDataDirectory(std::string_view appName)
+   namespace
    {
-      std::optional<std::filesystem::path> appDataDirectory;
-
-      // First, check the HOME environment variable
-      char* homePath = secure_getenv("HOME");
-
-      // If it isn't set, grab the directory from the password entry file
-      if (!homePath)
+      const char* getHomeDir()
       {
+         // First, check the HOME environment variable
+         char* homeDir = secure_getenv("HOME");
+         if (homeDir)
+         {
+            return homeDir;
+         }
+
+         // If it isn't set, grab the directory from the password entry file
          if (struct passwd* pw = getpwuid(getuid()))
          {
-            homePath = pw->pw_dir;
+            return pw->pw_dir;
          }
-      }
 
-      if (homePath)
+         return nullptr;
+      }
+   }
+
+   std::optional<std::filesystem::path> getKnownDirectoryPath(KnownDirectory knownDirectory)
+   {
+      if (knownDirectory == KnownDirectory::CommonApplicationData)
       {
-         appDataDirectory = std::filesystem::path(homePath) / ".config" / appName;
+         return "/var/lib";
       }
 
-      return appDataDirectory;
+      const char* homeDir = getHomeDir();
+      if (!homePath)
+      {
+         return std::nullopt;
+      }
+
+      std::filesystem::path homePath = homeDir;
+      switch (knownDirectory)
+      {
+      case KnownDirectory::Home:
+         return homePath;
+      case KnownDirectory::Desktop:
+         return homePath / "Desktop";
+      case KnownDirectory::Downloads:
+         return homePath / "Downloads";
+      case KnownDirectory::UserApplicationData:
+         return homePath / ".config";
+      default:
+         return std::nullopt;
+      }
    }
 #endif // defined(__linux__)
 

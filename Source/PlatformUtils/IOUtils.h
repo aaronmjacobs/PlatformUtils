@@ -1,5 +1,7 @@
 #pragma once
 
+#include "OSUtils.h"
+
 #include <cstdint>
 #include <filesystem>
 #include <optional>
@@ -18,6 +20,9 @@ namespace IOUtils
    std::optional<std::filesystem::path> findProjectDirectory();
 
    std::optional<std::filesystem::path> getAbsolutePath(const std::filesystem::path& base, const std::filesystem::path& relativePath);
+   std::optional<std::filesystem::path> getAbsoluteKnownPath(OSUtils::KnownDirectory knownDirectory, const std::filesystem::path& relativePath);
+
    std::optional<std::filesystem::path> getAboluteProjectPath(const std::filesystem::path& relativePath);
    std::optional<std::filesystem::path> getAbsoluteAppDataPath(std::string_view appName, const std::filesystem::path& relativePath);
+   std::optional<std::filesystem::path> getAbsoluteCommonAppDataPath(std::string_view appName, const std::filesystem::path& relativePath);
 }

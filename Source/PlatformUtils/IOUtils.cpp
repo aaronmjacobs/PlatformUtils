@@ -8,24 +8,20 @@ namespace IOUtils
 {
    std::optional<std::string> readTextFile(const std::filesystem::path& path)
    {
-      std::optional<std::string> data;
-
       if (std::filesystem::is_regular_file(path))
       {
          std::ifstream in(path);
          if (in)
          {
-            data = std::string(std::istreambuf_iterator<char>(in), std::istreambuf_iterator<char>());
+            return std::string(std::istreambuf_iterator<char>(in), std::istreambuf_iterator<char>());
          }
       }
 
-      return data;
+      return std::nullopt;
    }
 
    std::optional<std::vector<uint8_t>> readBinaryFile(const std::filesystem::path& path)
    {
-      std::optional<std::vector<uint8_t>> data;
-
       if (std::filesystem::is_regular_file(path))
       {
          std::ifstream in(path, std::ifstream::binary);
@@ -39,13 +35,15 @@ namespace IOUtils
             {
                in.seekg(0, std::ios_base::beg);
 
-               data = std::vector<uint8_t>(static_cast<size_t>(size));
-               in.read(reinterpret_cast<char*>(data->data()), size);
+               std::vector<uint8_t> data(static_cast<size_t>(size));
+               in.read(reinterpret_cast<char*>(data.data()), size);
+
+               return data;
             }
          }
       }
 
-      return data;
+      return std::nullopt;
    }
 
    bool writeTextFile(const std::filesystem::path& path, std::string_view data)
@@ -144,42 +142,46 @@ namespace IOUtils
 
    std::optional<std::filesystem::path> getAbsolutePath(const std::filesystem::path& base, const std::filesystem::path& relativePath)
    {
-      std::optional<std::filesystem::path> absolutePath;
-
       if (base.is_absolute() && relativePath.is_relative())
       {
          std::error_code errorCode;
          std::filesystem::path canonicalAbsolutePath = std::filesystem::weakly_canonical(base / relativePath, errorCode);
          if (!errorCode)
          {
-            absolutePath = canonicalAbsolutePath;
+            return canonicalAbsolutePath;
          }
       }
 
-      return absolutePath;
+      return std::nullopt;
+   }
+
+   std::optional<std::filesystem::path> getAbsoluteKnownPath(OSUtils::KnownDirectory knownDirectory, const std::filesystem::path& relativePath)
+   {
+      if (std::optional<std::filesystem::path> knownDirectoryPath = OSUtils::getKnownDirectoryPath(knownDirectory))
+      {
+         return getAbsolutePath(*knownDirectoryPath, relativePath);
+      }
+
+      return std::nullopt;
    }
 
    std::optional<std::filesystem::path> getAboluteProjectPath(const std::filesystem::path& relativePath)
    {
-      std::optional<std::filesystem::path> absoluteProjectPath;
-
       if (std::optional<std::filesystem::path> projectDirectory = findProjectDirectory())
       {
-         absoluteProjectPath = getAbsolutePath(*projectDirectory, relativePath);
+         return getAbsolutePath(*projectDirectory, relativePath);
       }
 
-      return absoluteProjectPath;
+      return std::nullopt;
    }
 
    std::optional<std::filesystem::path> getAbsoluteAppDataPath(std::string_view appName, const std::filesystem::path& relativePath)
    {
-      std::optional<std::filesystem::path> absoluteAppDataPath;
+      return getAbsoluteKnownPath(OSUtils::KnownDirectory::UserApplicationData, appName / relativePath);
+   }
 
-      if (std::optional<std::filesystem::path> appDataDirectory = OSUtils::getAppDataDirectory(appName))
-      {
-         absoluteAppDataPath = getAbsolutePath(*appDataDirectory, relativePath);
-      }
-
-      return absoluteAppDataPath;
+   std::optional<std::filesystem::path> getAbsoluteCommonAppDataPath(std::string_view appName, const std::filesystem::path& relativePath)
+   {
+      return getAbsoluteKnownPath(OSUtils::KnownDirectory::CommonApplicationData, appName / relativePath);
    }
 }

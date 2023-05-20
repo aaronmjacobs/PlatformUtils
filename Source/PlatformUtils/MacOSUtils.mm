@@ -10,8 +10,6 @@ namespace OSUtils
 {
    std::optional<std::filesystem::path> getExecutablePath()
    {
-      std::optional<std::filesystem::path> executablePath;
-
       uint32_t size = MAXPATHLEN;
       char rawPath[size];
       if (_NSGetExecutablePath(rawPath, &size) == 0)
@@ -19,26 +17,53 @@ namespace OSUtils
          char realPath[size];
          if (realpath(rawPath, realPath))
          {
-            executablePath = std::filesystem::path(realPath);
+            return std::filesystem::path(realPath);
          }
       }
 
-      return executablePath;
+      return std::nullopt;
    }
 
-   std::optional<std::filesystem::path> getAppDataDirectory(std::string_view appName)
+   std::optional<std::filesystem::path> getKnownDirectoryPath(KnownDirectory knownDirectory)
    {
-      std::optional<std::filesystem::path> appDataDirectory;
-
-      if (NSURL* appSupportURL = [[NSFileManager defaultManager] URLForDirectory:NSApplicationSupportDirectory
-                                                                 inDomain:NSUserDomainMask
-                                                                 appropriateForURL:nil
-                                                                 create:YES
-                                                                 error:nil])
+      if (knownDirectory == KnownDirectory::Home)
       {
-         appDataDirectory = std::filesystem::path([[appSupportURL path] cStringUsingEncoding:NSASCIIStringEncoding]) / appName;
+         return std::filesystem::path([NSHomeDirectory() cStringUsingEncoding:NSASCIIStringEncoding]);
       }
 
-      return appDataDirectory;
+      NSSearchPathDirectory searchPathDirectory = NSDesktopDirectory;
+      NSSearchPathDomainMask domain = NSUserDomainMask;
+      switch (knownDirectory)
+      {
+      case KnownDirectory::Desktop:
+         searchPathDirectory = NSDesktopDirectory;
+         domain = NSUserDomainMask;
+         break;
+      case KnownDirectory::Downloads:
+         searchPathDirectory = NSDownloadsDirectory;
+         domain = NSUserDomainMask;
+         break;
+      case KnownDirectory::UserApplicationData:
+         searchPathDirectory = NSApplicationSupportDirectory;
+         domain = NSUserDomainMask;
+         break;
+      case KnownDirectory::CommonApplicationData:
+         searchPathDirectory = NSApplicationSupportDirectory;
+         domain = NSLocalDomainMask;
+         break;
+      default:
+         return std::nullopt;
+      }
+
+      if (NSURL* directoryURL = [[NSFileManager defaultManager] URLForDirectory:searchPathDirectory
+                                                                inDomain:domain
+                                                                appropriateForURL:nil
+                                                                create:YES
+                                                                error:nil])
+      {
+         return std::filesystem::path([[directoryURL path] cStringUsingEncoding:NSASCIIStringEncoding]);
+      }
+
+      return std::nullopt;
    }
 }
