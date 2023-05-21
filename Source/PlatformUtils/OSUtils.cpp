@@ -1,7 +1,6 @@
 #include "PlatformUtils/OSUtils.h"
 
 #if defined(_WIN32)
-#include <codecvt>
 #include <locale>
 #include <vector>
 #include <ShlObj.h>
@@ -79,11 +78,7 @@ namespace OSUtils
       PWSTR path = nullptr;
       if (SHGetKnownFolderPath(*folderID, KF_FLAG_DEFAULT, nullptr, &path) == S_OK)
       {
-#pragma warning(push)
-#pragma warning(disable: 4996) // codecvt is deprecated, but there is no replacement
-         std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
-         knownDirectoryPath = std::filesystem::path(converter.to_bytes(std::wstring(path)));
-#pragma warning(pop)
+         knownDirectoryPath = std::filesystem::path(path);
       }
       CoTaskMemFree(path);
 
