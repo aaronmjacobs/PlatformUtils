@@ -129,7 +129,7 @@ namespace OSUtils
       }
 
       const char* homeDir = getHomeDir();
-      if (!homePath)
+      if (!homeDir)
       {
          return std::nullopt;
       }
