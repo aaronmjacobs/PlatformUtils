@@ -207,16 +207,18 @@ namespace OSUtils
          startupInfo.hStdError = hStdErrWrite;
       }
 
-      std::optional<ProcessExitInfo> exitInfo;
       PROCESS_INFORMATION processInformation{};
-      if (CreateProcessW(pathString.c_str(), commandLine.data(), nullptr, nullptr, true, CREATE_UNICODE_ENVIRONMENT | DETACHED_PROCESS, environment.data(), nullptr, &startupInfo, &processInformation))
-      {
-         if (usePipes)
-         {
-            CloseHandle(hStdOutWrite);
-            CloseHandle(hStdErrWrite);
-         }
+      bool processCreated = CreateProcessW(pathString.c_str(), commandLine.data(), nullptr, nullptr, true, CREATE_UNICODE_ENVIRONMENT | DETACHED_PROCESS, environment.data(), nullptr, &startupInfo, &processInformation);
 
+      if (usePipes)
+      {
+         CloseHandle(hStdOutWrite);
+         CloseHandle(hStdErrWrite);
+      }
+
+      std::optional<ProcessExitInfo> exitInfo;
+      if (processCreated)
+      {
          if (startInfo.waitForExit)
          {
             WaitForSingleObject(processInformation.hProcess, INFINITE);
