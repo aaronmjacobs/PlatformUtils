@@ -1,6 +1,8 @@
 #pragma once
 
 #include <filesystem>
+#include <functional>
+#include <memory>
 #include <optional>
 #include <string>
 #include <unordered_map>
@@ -17,6 +19,10 @@ namespace OSUtils
       UserApplicationData,
       CommonApplicationData,
    };
+
+   std::optional<std::filesystem::path> getExecutablePath();
+   std::optional<std::filesystem::path> getKnownDirectoryPath(KnownDirectory knownDirectory);
+   bool setWorkingDirectoryToExecutableDirectory();
 
    struct ProcessStartInfo
    {
@@ -37,11 +43,35 @@ namespace OSUtils
       std::string stdErr;
    };
 
-   std::optional<std::filesystem::path> getExecutablePath();
-   std::optional<std::filesystem::path> getKnownDirectoryPath(KnownDirectory knownDirectory);
-
    std::unordered_map<std::string, std::string> getEnvironment();
    std::optional<ProcessExitInfo> executeProcess(ProcessStartInfo startInfo);
 
-   bool setWorkingDirectoryToExecutableDirectory();
+   enum class DirectoryWatchEvent
+   {
+      Create,
+      Delete,
+      Rename,
+      Modify
+   };
+
+   class DirectoryWatcher
+   {
+   public:
+      using ID = int;
+      using NotifyFunction = std::function<void(DirectoryWatchEvent, const std::filesystem::path& /* directory */, const std::filesystem::path& /* file */)>;
+
+      static constexpr ID kInvalidID = -1;
+
+      DirectoryWatcher();
+      ~DirectoryWatcher();
+
+      void update();
+
+      ID addWatch(const std::filesystem::path& directory, bool recursive, NotifyFunction notifyFunction);
+      void removeWatch(ID id);
+
+   private:
+      class Impl;
+      std::unique_ptr<Impl> impl;
+   };
 }
