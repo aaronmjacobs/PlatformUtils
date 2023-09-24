@@ -20,7 +20,7 @@ elseif(APPLE)
       "${SRC_DIR}/PlatformUtils/OSUtils_POSIX.cpp"
    )
    target_compile_options(${PROJECT_NAME} PUBLIC "-xobjective-c++")
-   target_link_libraries(${PROJECT_NAME} PUBLIC "-framework Foundation")
+   target_link_libraries(${PROJECT_NAME} PUBLIC "-framework CoreServices -framework Foundation")
 elseif(LINUX)
    target_sources(${PROJECT_NAME} PRIVATE
       "${SRC_DIR}/PlatformUtils/OSUtils_Linux.cpp"
