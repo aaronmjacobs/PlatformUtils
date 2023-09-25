@@ -36,7 +36,7 @@ namespace OSUtils
    {
       if (knownDirectory == KnownDirectory::Home)
       {
-         return std::filesystem::path([NSHomeDirectory() cStringUsingEncoding:NSASCIIStringEncoding]);
+         return std::filesystem::path([NSHomeDirectory() cStringUsingEncoding:NSUTF8StringEncoding]);
       }
 
       NSSearchPathDirectory searchPathDirectory = NSDesktopDirectory;
@@ -69,7 +69,7 @@ namespace OSUtils
                                                                 create:YES
                                                                 error:nil])
       {
-         return std::filesystem::path([[directoryURL path] cStringUsingEncoding:NSASCIIStringEncoding]);
+         return std::filesystem::path([[directoryURL path] cStringUsingEncoding:NSUTF8StringEncoding]);
       }
 
       return std::nullopt;
