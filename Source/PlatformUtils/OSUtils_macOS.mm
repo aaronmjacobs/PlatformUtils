@@ -239,7 +239,6 @@ namespace OSUtils
          ~Watch()
          {
             FSEventStreamStop(eventStream);
-            FSEventStreamSetDispatchQueue(eventStream, nullptr);
             FSEventStreamInvalidate(eventStream);
             FSEventStreamRelease(eventStream);
          }
