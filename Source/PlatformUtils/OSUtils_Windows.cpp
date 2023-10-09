@@ -2,12 +2,20 @@
 
 #include <array>
 #include <bit>
+#include <limits>
 #include <sstream>
 #include <utility>
 #include <vector>
 
+#if !defined(NOMINMAX)
+#  define NOMINMAX
+#endif
+
+#if !defined(WIN32_LEAN_AND_MEAN)
+#  define WIN32_LEAN_AND_MEAN
+#endif
+
 #include <ShlObj.h>
-#define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 
 namespace OSUtils
@@ -16,20 +24,22 @@ namespace OSUtils
    {
       std::string wstringToString(const std::wstring& wstring)
       {
-         int numBytes = WideCharToMultiByte(CP_UTF8, 0, wstring.c_str(), wstring.size(), nullptr, 0, nullptr, nullptr);
+         int numWideChars = wstring.size() <= static_cast<size_t>(std::numeric_limits<int>::max()) ? static_cast<int>(wstring.size()) : -1;
+         int numBytes = WideCharToMultiByte(CP_UTF8, 0, wstring.c_str(), numWideChars, nullptr, 0, nullptr, nullptr);
 
          std::string string(numBytes, '\0');
-         WideCharToMultiByte(CP_UTF8, 0, wstring.c_str(), wstring.size(), string.data(), numBytes, nullptr, nullptr);
+         WideCharToMultiByte(CP_UTF8, 0, wstring.c_str(), numWideChars, string.data(), numBytes, nullptr, nullptr);
 
          return string;
       }
 
       std::wstring stringToWstring(const std::string& string)
       {
-         int numChars = MultiByteToWideChar(CP_UTF8, 0, string.c_str(), string.size(), nullptr, 0);
+         int numBytes = string.size() <= static_cast<size_t>(std::numeric_limits<int>::max()) ? static_cast<int>(string.size()) : -1;
+         int numWideChars = MultiByteToWideChar(CP_UTF8, 0, string.c_str(), numBytes, nullptr, 0);
 
-         std::wstring wstring(numChars, L'\0');
-         MultiByteToWideChar(CP_UTF8, 0, string.c_str(), string.size(), wstring.data(), wstring.size());
+         std::wstring wstring(numWideChars, L'\0');
+         MultiByteToWideChar(CP_UTF8, 0, string.c_str(), numBytes, wstring.data(), numWideChars);
 
          return wstring;
       }
@@ -37,10 +47,10 @@ namespace OSUtils
       std::string readTextFromPipe(HANDLE handle)
       {
          LARGE_INTEGER fileSize{};
-         if (GetFileSizeEx(handle, &fileSize) && fileSize.QuadPart > 0)
+         if (GetFileSizeEx(handle, &fileSize) && fileSize.LowPart > 0 && fileSize.HighPart == 0)
          {
-            std::string text(fileSize.QuadPart, '\0');
-            if (ReadFile(handle, text.data(), fileSize.QuadPart, nullptr, nullptr))
+            std::string text(fileSize.LowPart, '\0');
+            if (ReadFile(handle, text.data(), fileSize.LowPart, nullptr, nullptr))
             {
                return text;
             }
@@ -347,7 +357,7 @@ namespace OSUtils
          {
             static const DWORD kFilter = FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_DIR_NAME | FILE_NOTIFY_CHANGE_ATTRIBUTES | FILE_NOTIFY_CHANGE_SIZE | FILE_NOTIFY_CHANGE_LAST_WRITE | FILE_NOTIFY_CHANGE_SECURITY;
 
-            return ReadDirectoryChangesW(directoryHandle, buffer.data(), buffer.size(), recursive, kFilter, nullptr, &overlapped, nullptr);
+            return ReadDirectoryChangesW(directoryHandle, buffer.data(), static_cast<DWORD>(buffer.size()), recursive, kFilter, nullptr, &overlapped, nullptr);
          }
 
          bool poll(std::vector<Notification>& notifications)
