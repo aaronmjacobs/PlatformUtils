@@ -288,7 +288,7 @@ namespace OSUtils
          HANDLE directoryHandle = CreateFileW(directory.c_str(), FILE_LIST_DIRECTORY, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OVERLAPPED, nullptr);
          if (directoryHandle == INVALID_HANDLE_VALUE)
          {
-            return kInvalidID;
+            return kInvalidIdentifier;
          }
 
          ID id = idCounter++;
@@ -299,7 +299,7 @@ namespace OSUtils
          {
             watches.erase(id);
             --idCounter;
-            return kInvalidID;
+            return kInvalidIdentifier;
          }
 
          return id;
@@ -313,7 +313,7 @@ namespace OSUtils
    private:
       struct Notification
       {
-         ID id = kInvalidID;
+         ID id = kInvalidIdentifier;
          DirectoryWatchEvent event = DirectoryWatchEvent::Create;
          std::filesystem::path path;
 
@@ -430,7 +430,7 @@ namespace OSUtils
          }
 
          private:
-            ID id = kInvalidID;
+            ID id = kInvalidIdentifier;
             std::filesystem::path directory;
             NotifyFunction notifyFunction;
             bool recursive = false;

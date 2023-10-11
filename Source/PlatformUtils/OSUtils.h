@@ -60,7 +60,7 @@ namespace OSUtils
       using ID = int;
       using NotifyFunction = std::function<void(DirectoryWatchEvent, const std::filesystem::path& /* directory */, const std::filesystem::path& /* file */)>;
 
-      static constexpr ID kInvalidID = -1;
+      static constexpr ID kInvalidIdentifier = -1;
 
       DirectoryWatcher();
       ~DirectoryWatcher();

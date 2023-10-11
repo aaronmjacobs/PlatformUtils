@@ -184,7 +184,7 @@ namespace OSUtils
          {
             watches.erase(location);
             --idCounter;
-            return kInvalidID;
+            return kInvalidIdentifier;
          }
 
          return id;
@@ -208,7 +208,7 @@ namespace OSUtils
    private:
       struct Notification
       {
-         ID id = kInvalidID;
+         ID id = kInvalidIdentifier;
          DirectoryWatchEvent event = DirectoryWatchEvent::Create;
          std::filesystem::path path;
          int descriptor = -1;
@@ -336,7 +336,7 @@ namespace OSUtils
 
          Impl& impl;
 
-         ID id = kInvalidID;
+         ID id = kInvalidIdentifier;
          NotifyFunction notifyFunction;
          bool recursive = false;
 

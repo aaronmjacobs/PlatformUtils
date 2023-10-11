@@ -75,11 +75,6 @@ namespace OSUtils
       return std::nullopt;
    }
 
-#if defined(kInvalidID)
-   // Defined in MacTypes.h
-#  undef kInvalidID
-#endif
-
    class DirectoryWatcher::Impl
    {
    public:
@@ -258,7 +253,7 @@ namespace OSUtils
          }
 
       private:
-         ID id = kInvalidID;
+         ID id = kInvalidIdentifier;
          std::filesystem::path directory;
          bool recursive = false;
          NotifyFunction notifyFunction;
