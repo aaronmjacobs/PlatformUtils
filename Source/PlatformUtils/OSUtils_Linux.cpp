@@ -50,7 +50,15 @@ namespace OSUtils
 
    std::optional<std::filesystem::path> getKnownDirectoryPath(KnownDirectory knownDirectory)
    {
-      if (knownDirectory == KnownDirectory::CommonApplicationData)
+      if (knownDirectory == KnownDirectory::UserApplications)
+      {
+         return "/usr/local";
+      }
+      else if (knownDirectory == KnownDirectory::CommonApplications)
+      {
+         return "/usr";
+      }
+      else if (knownDirectory == KnownDirectory::CommonApplicationData)
       {
          return "/var/lib";
       }

@@ -100,6 +100,12 @@ namespace OSUtils
       case KnownDirectory::Downloads:
          folderID = &FOLDERID_Downloads;
          break;
+      case KnownDirectory::UserApplications:
+         folderID = &FOLDERID_UserProgramFiles;
+         break;
+      case KnownDirectory::CommonApplications:
+         folderID = &FOLDERID_ProgramFiles;
+         break;
       case KnownDirectory::UserApplicationData:
          folderID = &FOLDERID_LocalAppData;
          break;

@@ -51,6 +51,14 @@ namespace OSUtils
          searchPathDirectory = NSDownloadsDirectory;
          domain = NSUserDomainMask;
          break;
+      case KnownDirectory::UserApplications:
+         searchPathDirectory = NSApplicationDirectory;
+         domain = NSUserDomainMask;
+         break;
+      case KnownDirectory::CommonApplications:
+         searchPathDirectory = NSApplicationDirectory;
+         domain = NSLocalDomainMask;
+         break;
       case KnownDirectory::UserApplicationData:
          searchPathDirectory = NSApplicationSupportDirectory;
          domain = NSUserDomainMask;

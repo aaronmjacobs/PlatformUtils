@@ -16,6 +16,9 @@ namespace OSUtils
       Desktop,
       Downloads,
 
+      UserApplications,
+      CommonApplications,
+
       UserApplicationData,
       CommonApplicationData,
    };
