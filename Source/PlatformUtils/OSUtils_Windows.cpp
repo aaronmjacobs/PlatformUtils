@@ -62,15 +62,15 @@ namespace OSUtils
 
    std::optional<std::filesystem::path> getExecutablePath()
    {
-      TCHAR buffer[MAX_PATH + 1];
-      DWORD length = GetModuleFileName(nullptr, buffer, MAX_PATH);
+      WCHAR buffer[MAX_PATH + 1];
+      DWORD length = GetModuleFileNameW(nullptr, buffer, MAX_PATH);
       buffer[length] = '\0';
 
       if (length == 0 || length == MAX_PATH || GetLastError() == ERROR_INSUFFICIENT_BUFFER)
       {
          static const DWORD kUnreasonablyLargeStringLength = 32767;
-         std::vector<TCHAR> unreasonablyLargeBuffer(kUnreasonablyLargeStringLength + 1);
-         length = GetModuleFileName(nullptr, unreasonablyLargeBuffer.data(), kUnreasonablyLargeStringLength);
+         std::vector<WCHAR> unreasonablyLargeBuffer(kUnreasonablyLargeStringLength + 1);
+         length = GetModuleFileNameW(nullptr, unreasonablyLargeBuffer.data(), kUnreasonablyLargeStringLength);
          unreasonablyLargeBuffer[length] = '\0';
 
          if (length != 0 && length != kUnreasonablyLargeStringLength && GetLastError() != ERROR_INSUFFICIENT_BUFFER)
